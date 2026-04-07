@@ -1,0 +1,11 @@
+node_modules/
+out/
+native/target/
+native/node_modules/
+native/index.js
+native/index.d.ts
+native/*.node
+*.vsix
+.vscode-test/
+.github
+.env

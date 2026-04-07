@@ -1,0 +1,111 @@
+{
+  "name": "county",
+  "displayName": "County",
+  "description": "Track time spent on your projects — powered by Rust",
+  "version": "0.1.0",
+  "publisher": "county",
+  "license": "MIT",
+  "icon": "media/marketplace-icon.png",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "county",
+          "title": "County",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "county": [
+        {
+          "id": "county.projectsView",
+          "name": "Projects",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "county.displayTime",
+        "title": "County: Display Time"
+      },
+      {
+        "command": "county.showSettings",
+        "title": "County: Show Settings"
+      },
+      {
+        "command": "county.toggleTimer",
+        "title": "County: Toggle Timer"
+      },
+      {
+        "command": "county.refreshProjects",
+        "title": "Refresh",
+        "icon": {
+          "light": "media/icon.svg",
+          "dark": "media/icon.svg"
+        }
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "county.refreshProjects",
+          "when": "view == county.projectsView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "County",
+      "properties": {
+        "county.idleTimeoutSeconds": {
+          "type": "number",
+          "default": 300,
+          "minimum": 10,
+          "description": "Seconds of inactivity before the timer pauses"
+        },
+        "county.saveIntervalSeconds": {
+          "type": "number",
+          "default": 30,
+          "minimum": 5,
+          "description": "How often tracking data is saved to disk (seconds)"
+        },
+        "county.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the time tracking status bar item"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build:native": "cd native && npx @napi-rs/cli build --platform --release",
+    "build:native:debug": "cd native && npx @napi-rs/cli build --platform",
+    "build:ts": "tsc",
+    "build": "npm run build:native && npm run build:ts",
+    "compile": "tsc",
+    "watch": "tsc -watch",
+    "package": "npx @vscode/vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}

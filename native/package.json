@@ -1,0 +1,17 @@
+{
+  "name": "county-native",
+  "version": "0.1.0",
+  "napi": {
+    "name": "county-native",
+    "triples": {
+      "defaults": false
+    }
+  },
+  "scripts": {
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.4"
+  }
+}

@@ -1,0 +1,17 @@
+.github/**
+src/**
+native/src/**
+native/target/**
+native/Cargo.toml
+native/Cargo.lock
+native/build.rs
+native/.cargo/**
+native/package.json
+native/node_modules/**
+node_modules/**
+**/*.ts
+!native/index.d.ts
+tsconfig.json
+.gitignore
+.vscode/**
+.vscode-test/**
