@@ -2,17 +2,18 @@
   "name": "county",
   "displayName": "County",
   "description": "Track time spent on your projects — powered by Rust",
-  "version": "0.1.0",
-  "publisher": "county",
+  "version": "0.1.1",
+  "publisher": "NNKtv28",
   "license": "MIT",
   "icon": "media/marketplace-icon.png",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/NNKTV28/County"
   },
   "engines": {
     "vscode": "^1.85.0"
   },
+  "extensionKind": ["ui"],
   "categories": [
     "Other"
   ],
