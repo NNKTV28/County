@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
 import type { TimeTracker, NativeModule, ProjectInfo } from './types';
+import type { GistSyncManager } from './gistSync';
 
 export function registerCommands(
     context: vscode.ExtensionContext,
     tracker: TimeTracker,
-    native: NativeModule
+    native: NativeModule,
+    syncManager: GistSyncManager
 ) {
     context.subscriptions.push(
         vscode.commands.registerCommand('county.displayTime', () =>
@@ -15,6 +17,9 @@ export function registerCommands(
         ),
         vscode.commands.registerCommand('county.toggleTimer', (projectPath?: string) =>
             toggleTimer(tracker, projectPath)
+        ),
+        vscode.commands.registerCommand('county.syncNow', () =>
+            syncNow(syncManager)
         )
     );
 }
@@ -124,4 +129,22 @@ async function toggleTimer(tracker: TimeTracker, directProjectPath?: string) {
     const projectLabel = selection.label.replace('$(arrow-right) ', '');
     const newState = !isCurrentlyEnabled ? 'enabled' : 'disabled';
     vscode.window.showInformationMessage(`County: Timer ${newState} for ${projectLabel}`);
+}
+
+async function syncNow(syncManager: GistSyncManager) {
+    await vscode.window.withProgress(
+        {
+            location: vscode.ProgressLocation.Notification,
+            title: 'County: Syncing with GitHub...',
+            cancellable: false,
+        },
+        async () => {
+            const success = await syncManager.sync();
+            if (success) {
+                vscode.window.showInformationMessage('County: Sync complete!');
+            } else {
+                vscode.window.showErrorMessage('County: Sync failed. Check your GitHub connection.');
+            }
+        }
+    );
 }

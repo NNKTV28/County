@@ -15,6 +15,8 @@ export interface TimeTracker {
     setEnabled(projectPath: string, enabled: boolean): boolean;
     isEnabled(projectPath: string): boolean;
     getProjectNames(): string[];
+    exportJson(): string;
+    mergeJson(remoteJson: string): boolean;
 }
 
 export interface NativeModule {

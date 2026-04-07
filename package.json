@@ -2,7 +2,7 @@
   "name": "county",
   "displayName": "County",
   "description": "Track time spent on your projects — powered by Rust",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "NNKtv28",
   "license": "MIT",
   "icon": "media/marketplace-icon.png",
@@ -54,6 +54,10 @@
         "title": "County: Toggle Timer"
       },
       {
+        "command": "county.syncNow",
+        "title": "County: Sync Now"
+      },
+      {
         "command": "county.refreshProjects",
         "title": "Refresh",
         "icon": {
@@ -90,6 +94,17 @@
           "type": "boolean",
           "default": true,
           "description": "Show the time tracking status bar item"
+        },
+        "county.syncEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable GitHub Gist sync to share progress across machines"
+        },
+        "county.syncIntervalMinutes": {
+          "type": "number",
+          "default": 15,
+          "minimum": 1,
+          "description": "How often to auto-sync with GitHub (minutes)"
         }
       }
     }

@@ -3,14 +3,17 @@ import * as path from 'node:path';
 import { registerCommands } from './commands';
 import { StatusBarManager } from './statusBar';
 import { ProjectsProvider } from './projectsView';
+import { GistSyncManager } from './gistSync';
 import type { TimeTracker, NativeModule } from './types';
 
 let native: NativeModule;
 let tracker: TimeTracker;
 let statusBarManager: StatusBarManager;
 let projectsProvider: ProjectsProvider;
+let syncManager: GistSyncManager;
 let tickInterval: NodeJS.Timeout | undefined;
 let saveInterval: NodeJS.Timeout | undefined;
+let syncInterval: NodeJS.Timeout | undefined;
 let lastActivityTime = Date.now();
 let tickCount = 0;
 
@@ -40,10 +43,14 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('county.refreshProjects', () => projectsProvider.refresh())
     );
 
+    syncManager = new GistSyncManager(context, tracker);
+
     registerActivityListeners(context);
-    registerCommands(context, tracker, native);
+    registerCommands(context, tracker, native, syncManager);
     startTimers(context);
     updateStatusBar();
+
+    syncOnActivate();
 
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(event => {
@@ -75,9 +82,14 @@ function registerActivityListeners(context: vscode.ExtensionContext) {
 function startTimers(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration('county');
     const saveIntervalMs = config.get<number>('saveIntervalSeconds', 30) * 1000;
+    const syncIntervalMs = config.get<number>('syncIntervalMinutes', 15) * 60 * 1000;
 
     tickInterval = setInterval(tick, 1000);
     saveInterval = setInterval(() => tracker.save(), saveIntervalMs);
+
+    if (config.get<boolean>('syncEnabled', false) && syncIntervalMs > 0) {
+        syncInterval = setInterval(() => performSync(), syncIntervalMs);
+    }
 
     context.subscriptions.push(
         { dispose: () => stopTimers() }
@@ -88,9 +100,14 @@ function restartTimers(context: vscode.ExtensionContext) {
     stopTimers();
     const config = vscode.workspace.getConfiguration('county');
     const saveIntervalMs = config.get<number>('saveIntervalSeconds', 30) * 1000;
+    const syncIntervalMs = config.get<number>('syncIntervalMinutes', 15) * 60 * 1000;
 
     tickInterval = setInterval(tick, 1000);
     saveInterval = setInterval(() => tracker.save(), saveIntervalMs);
+
+    if (config.get<boolean>('syncEnabled', false) && syncIntervalMs > 0) {
+        syncInterval = setInterval(() => performSync(), syncIntervalMs);
+    }
 }
 
 function stopTimers() {
@@ -101,6 +118,10 @@ function stopTimers() {
     if (saveInterval) {
         clearInterval(saveInterval);
         saveInterval = undefined;
+    }
+    if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = undefined;
     }
 }
 
@@ -124,6 +145,25 @@ function tick() {
     tickCount++;
     if (tickCount % 60 === 0) {
         projectsProvider.refresh();
+    }
+}
+
+async function syncOnActivate() {
+    const config = vscode.workspace.getConfiguration('county');
+    if (config.get<boolean>('syncEnabled', false)) {
+        await performSync();
+    }
+}
+
+async function performSync() {
+    try {
+        const success = await syncManager.sync();
+        if (success) {
+            projectsProvider.refresh();
+            updateStatusBar();
+        }
+    } catch {
+        // Silently fail on background sync
     }
 }
 
@@ -160,4 +200,8 @@ function getProjectName(): string {
 export function deactivate() {
     stopTimers();
     tracker?.save();
+    const config = vscode.workspace.getConfiguration('county');
+    if (config.get<boolean>('syncEnabled', false)) {
+        syncManager?.sync();
+    }
 }

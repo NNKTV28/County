@@ -140,6 +140,38 @@ impl TimeTracker {
             .map(|p| format!("{} — {}", p.name, p.path))
             .collect()
     }
+
+    #[napi]
+    pub fn export_json(&self) -> String {
+        serde_json::to_string_pretty(&self.store).unwrap_or_default()
+    }
+
+    #[napi]
+    pub fn merge_json(&mut self, remote_json: String) -> bool {
+        let remote_store: Store = match serde_json::from_str(&remote_json) {
+            Ok(s) => s,
+            Err(_) => return false,
+        };
+
+        for (path, remote_record) in remote_store.projects {
+            match self.store.projects.get_mut(&path) {
+                Some(local_record) => {
+                    if remote_record.total_seconds > local_record.total_seconds {
+                        local_record.total_seconds = remote_record.total_seconds;
+                    }
+                    if remote_record.last_active > local_record.last_active {
+                        local_record.last_active = remote_record.last_active.clone();
+                        local_record.name = remote_record.name.clone();
+                    }
+                }
+                None => {
+                    self.store.projects.insert(path, remote_record);
+                }
+            }
+        }
+
+        true
+    }
 }
 
 #[napi]
